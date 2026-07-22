@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { rooms, users } from '../store/store.js';
 import type { Room, User } from '../utils/types/types.js';
-import express, { type Request, type Response } from 'express';
+import express, { Router, type Request, type Response } from 'express';
 import EventEmitter from 'node:events';
 import { authMiddleware } from '../midleware/auth.middleware.js';
 
@@ -13,7 +13,7 @@ interface RoomEvents {
   deleteMember: [userId: string, updatedRoom: Room];
 }
 
-export const roomRouter = express.Router();
+export const roomRouter: Router = express.Router();
 
 export const roomEmitter = new EventEmitter<RoomEvents>();
 
@@ -91,7 +91,7 @@ roomRouter.patch(
       return res.sendStatus(400);
     }
 
-    foundRoom.usersId.push(userId)
+    foundRoom.usersId.push(userId);
 
     roomEmitter.emit('addMember', foundRoom);
 
@@ -119,7 +119,9 @@ roomRouter.patch(
       return res.sendStatus(400);
     }
 
-    foundRoom.usersId = foundRoom.usersId.filter(id => id !== userId);
+    foundRoom.usersId = foundRoom.usersId.filter(
+      (filterId) => filterId !== userId,
+    );
 
     roomEmitter.emit('deleteMember', userId, foundRoom);
 
@@ -156,6 +158,7 @@ roomRouter.get(
     const { roomId } = req.params;
 
     const userId = res.locals.user.id;
+
     if (!roomId) {
       return res.sendStatus(400);
     }
@@ -188,6 +191,7 @@ roomRouter.delete(
     const { roomId } = req.params;
 
     const userId = res.locals.user.id;
+
     if (!roomId) {
       return res.sendStatus(400);
     }

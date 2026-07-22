@@ -1,5 +1,7 @@
 import {
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -25,21 +27,24 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
   room,
 }) => {
   const [openAddMember, setOpenAddMember] = useState(false);
-  const moduleRef = useRef(null);
-  const addMemberOutsideRef = useRef(null);
+  const moduleRef = useRef<HTMLDivElement>(null);
+  const addMemberOutsideRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { currentRoom } = useRoomMessage();
   const [members, setMembers] = useState<Omit<User, "accessToken">[] | null>(
     null
   );
 
-  useOnClickOutside(moduleRef, () => {
+  useOnClickOutside(moduleRef as React.RefObject<HTMLDivElement>, () => {
     setOpen(false);
   });
 
-  useOnClickOutside(addMemberOutsideRef, () => {
-    setOpenAddMember(false);
-  });
+  useOnClickOutside(
+    addMemberOutsideRef as React.RefObject<HTMLDivElement>,
+    () => {
+      setOpenAddMember(false);
+    }
+  );
 
   useEffect(() => {
     clientApi.getMembersByRoom(room.id).then((res) => {
@@ -51,11 +56,23 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
     null
   );
 
-  useEffect(() => {
-    if (currentRoom.ownerId === user.id) {
+  const getUsersCanAddRoom = useMemo(() => {
+    return allUsers?.filter((item) => {
+      return !members?.some((mem) => mem.id === item.id);
+    });
+  }, [allUsers, members]);
+
+  const haldleGetAllUsers = useCallback(() => {
+    if (currentRoom?.ownerId === user?.id) {
       clientApi.getAllUser().then((res) => setAllUsers(res.data));
     }
-  }, [user.id, members, currentRoom]);
+  }, [currentRoom?.ownerId, user?.id]);
+
+  useEffect(() => {
+    if (currentRoom?.ownerId === user?.id) {
+      clientApi.getAllUser().then((res) => setAllUsers(res.data));
+    }
+  }, [user?.id, members, currentRoom]);
 
   return (
     <div className=" min-w-[320px] z-40 flex justify-center items-center fixed inset-0 bg-[rgba(0,0,0,0.5)]">
@@ -67,10 +84,13 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
           {"ABOUT THIS ROOM: "} <span className=" font-[800]">{room.name}</span>
         </h3>
         <h4 className="mt-2">{`MEMBERS: (${room.usersId.length + 1})`}</h4>
-        {currentRoom.ownerId === user.id && (
+        {currentRoom?.ownerId === user?.id && (
           <div ref={addMemberOutsideRef} className=" relative w-fit">
             <Button
-              onClick={() => setOpenAddMember(true)}
+              onClick={() => {
+                haldleGetAllUsers();
+                setOpenAddMember(true);
+              }}
               className="flex w-fit"
               leftIcon={<PlusIcon></PlusIcon>}
             >
@@ -78,13 +98,16 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
             </Button>
             {openAddMember && (
               <div className=" h-max-400px bg-(--bg) p-4 rounded-2xl shadow-[0px_0px_5px_5px_rgba(0,0,0,0.5)] absolute flex flex-col gap-2">
-                {allUsers &&
-                  allUsers.map((anotherUser) => (
+                {getUsersCanAddRoom && getUsersCanAddRoom.length === 0 ? (
+                  <div>Not found users</div>
+                ) : (
+                  getUsersCanAddRoom &&
+                  getUsersCanAddRoom.map((anotherUser) => (
                     <div className="flex gap-2" key={anotherUser.id}>
                       <Button
                         onClick={() => {
                           clientApi.addMemberRoom(
-                            currentRoom.id,
+                            currentRoom?.id || '',
                             anotherUser.id
                           );
                         }}
@@ -100,7 +123,8 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
                         {anotherUser.username}
                       </Button>
                     </div>
-                  ))}
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -114,12 +138,19 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
                     colorHuePercentage={member.colorHuePercent}
                   ></UserIcon>
                   <span className="font-[800]">{member.username}</span>
-                  {member.id !== user.id ? (
-                    currentRoom.ownerId === user.id && (
+                  {member.id !== user?.id ? (
+                    currentRoom?.ownerId === user?.id && (
                       <div className="flex-1 flex">
-                        <Button onClick={() => {
-                          clientApi.deleteMemberRoom(currentRoom.id, member.id)
-                        }} variant="ghost" className="ml-auto">
+                        <Button
+                          onClick={() => {
+                            clientApi.deleteMemberRoom(
+                              currentRoom?.id || '',
+                              member.id
+                            );
+                          }}
+                          variant="ghost"
+                          className="ml-auto"
+                        >
                           <XIcon></XIcon>
                         </Button>
                       </div>

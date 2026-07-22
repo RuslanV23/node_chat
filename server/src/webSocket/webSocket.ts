@@ -1,31 +1,8 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import type { Room } from '../utils/types/types.js';
 import { rooms, users } from '../store/store.js';
 import { roomEmitter } from '../routes/room.router.js';
 import type { IncomingMessage, Server } from 'node:http';
 import { messageEmitter } from '../routes/message.router.js';
-
-type actionSendEvent =
-  | {
-      type: 'rooms:post';
-      payload: { room: Room };
-    }
-  | {
-      type: 'rooms:update';
-      payload: { roomId: string; name: string };
-    };
-
-function sendEvent(socket: WebSocket, action: actionSendEvent) {
-  if (socket.readyState !== WebSocket.OPEN) {
-    return;
-  }
-
-  socket.send(
-    JSON.stringify({
-      action,
-    }),
-  );
-}
 
 export function createWebSocket(server: Server) {
   const wws = new WebSocketServer({ server });
@@ -38,6 +15,7 @@ export function createWebSocket(server: Server) {
 
     if (!user) {
       socket.close(1008, 'Unauthorized');
+
       return;
     }
 
@@ -45,11 +23,7 @@ export function createWebSocket(server: Server) {
   });
 
   roomEmitter.on('createRoom', (newRoom) => {
-    let increment = 0;
-
     for (const client of wws.clients) {
-      increment++;
-      console.log('f ' + increment);
       if (
         newRoom.ownerId === client.userId ||
         newRoom.usersId.find((id) => id === client.userId)
@@ -86,7 +60,6 @@ export function createWebSocket(server: Server) {
   });
 
   roomEmitter.on('addMember', (updatedRoom) => {
-    console.log('addMember server');
     for (const client of wws.clients) {
       if (
         updatedRoom.ownerId === client.userId ||
@@ -106,7 +79,6 @@ export function createWebSocket(server: Server) {
         updatedRoom.usersId.find((id) => id === client.userId) ||
         userId === client.userId
       ) {
-
         client.send(
           JSON.stringify({ type: 'room:deleteMember', payload: updatedRoom }),
         );

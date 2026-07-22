@@ -16,7 +16,7 @@ import {
 import { UserIcon } from "../../shared/UserIcon/UserIcon";
 import { clientApi } from "../../api/clientApi";
 import { useOnClickOutside } from "usehooks-ts";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useAuth } from "../../store/authContext";
 import { useSideMenu } from "../../store/sideMenuContext";
 import { useMedia } from "../../store/mediaContext";
@@ -30,21 +30,23 @@ export const LeftMenu: FC<HTMLAttributes<HTMLDivElement>> = ({
   const { leftMenu, setLeftMenu } = useSideMenu();
   const { isDesktop } = useMedia();
   const [openCreateRoom, setOpenCreateRoom] = useState(false);
-  const openCreateRoomRef = useRef(null);
-  const focusCreateRoomRef = useRef(null);
+  const openCreateRoomRef = useRef<HTMLDivElement>(null);
+  const focusCreateRoomRef = useRef<HTMLInputElement>(null);
   const { rooms } = useRoomMessage();
-
 
   useEffect(() => {
     setLeftMenu(isDesktop);
   }, [isDesktop, setLeftMenu]);
 
-  useOnClickOutside(openCreateRoomRef, () => {
-    setOpenCreateRoom(false);
-  });
+  useOnClickOutside(
+    openCreateRoomRef as React.RefObject<HTMLDivElement>,
+    () => {
+      setOpenCreateRoom(false);
+    }
+  );
 
   useEffect(() => {
-    if (openCreateRoom && focusCreateRoomRef) {
+    if (openCreateRoom && focusCreateRoomRef && focusCreateRoomRef.current) {
       focusCreateRoomRef.current.focus();
     }
   }, [openCreateRoom]);
@@ -130,21 +132,29 @@ export const LeftMenu: FC<HTMLAttributes<HTMLDivElement>> = ({
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col p-4 overflow-y-auto overflow-x-hidden scrollbar-thin">
+        <div className="flex flex-1 flex-col p-4 overflow-y-auto overflow-x-hidden scrollbar-thin gap-1">
           {rooms.map((room) => {
             return (
-              <Link
-              onClick={() => {
-                if (!isDesktop) {
-                  setLeftMenu(false);
-                }}}
+              <NavLink
+                onClick={() => {
+                  if (!isDesktop) {
+                    setLeftMenu(false);
+                  }
+                }}
                 to={"/" + room.id}
                 key={room.id}
-                className="flex rounded-[10px] gap-2 p-4 hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)] transition-[background-color]"
+                className={({ isActive }) =>
+                  cn(
+                    "flex rounded-[10px] gap-2 p-4 hover:bg-[color-mix(in_srgb,var(--accent)_20%,transparent)] transition-[background-color]",
+                    {
+                      "border border-(--accent)": isActive,
+                    }
+                  )
+                }
               >
                 <HashIcon></HashIcon>
                 <span className="text-(--text-h2) font-[500]">{room.name}</span>
-              </Link>
+              </NavLink>
             );
           })}
         </div>

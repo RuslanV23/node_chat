@@ -5,7 +5,8 @@
   "scripts": {
     "start:client": "npm run dev -w client",
     "start:server": "npm run dev -w server",
-    "build:all": "npm run build --workspaces"
+    "build:all": "npm run build --workspaces",
+    "test": "npm run test -w server"
   },
   "workspaces": [
     "server",

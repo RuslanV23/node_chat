@@ -1,9 +1,9 @@
 import { randomUUID } from 'node:crypto';
 import { rooms, users } from '../store/store.js';
 import type { User } from '../utils/types/types.js';
-import express, { type Request, type Response } from 'express';
+import express, { Router, type Request, type Response } from 'express';
 
-export const userRouter = express.Router();
+export const userRouter: Router = express.Router();
 
 userRouter.post(
   '',
@@ -26,31 +26,22 @@ userRouter.post(
 
     users.push(newUser);
     res.status(201).send(newUser);
-
-    console.log(newUser);
   },
 );
 
-userRouter.get(
-  '/all',
-  (req: Request<{}, {}, {}, {}>, res: Response) => {
+userRouter.get('/all', (req: Request<{}, {}, {}, {}>, res: Response) => {
+  const normalizedUsers = users.map((user) => {
+    const { accessToken, ...normalizedUser } = user;
 
-    const normalizedUsers = users.map(user => {
-      const {accessToken, ...normalizedUser} = user;
-      return normalizedUser;
-    })
+    return normalizedUser;
+  });
 
-    res.send(normalizedUsers);
-  },
-);
-
+  res.send(normalizedUsers);
+});
 
 userRouter.get(
   '/:userId',
   (req: Request<{ userId?: string }, {}, {}>, res: Response) => {
-    console.log(req.url)
-
-
     const { userId } = req.params;
 
     if (!userId) {
@@ -71,7 +62,6 @@ userRouter.get(
   '/',
   (req: Request<{}, {}, {}, { roomId?: string }>, res: Response) => {
     const { roomId } = req.query;
-    console.log(req.url)
 
     if (!roomId) {
       return res.sendStatus(404);
@@ -86,12 +76,11 @@ userRouter.get(
     const usersByRoom: Omit<User, 'accessToken'>[] = [];
 
     [...foundRoom.usersId, foundRoom.ownerId].forEach((userId) => {
-      const foundUser = users.find(
-        (us) => us.id === userId,
-      );
+      const foundUser = users.find((us) => us.id === userId);
 
       if (foundUser) {
-        const {accessToken, ...normalizeUser} = foundUser
+        const { accessToken, ...normalizeUser } = foundUser;
+
         usersByRoom.push(normalizeUser);
       }
     });
@@ -99,4 +88,3 @@ userRouter.get(
     res.send(usersByRoom);
   },
 );
-

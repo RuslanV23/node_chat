@@ -6,7 +6,6 @@ import { createWebSocket } from './webSocket/webSocket.js';
 import { roomRouter } from './routes/room.router.js';
 import { messageRouter } from './routes/message.router.js';
 
-
 const app = express();
 
 app.use(cors());
@@ -25,5 +24,3 @@ export const expressServer = app.listen(3005, () => {
 });
 
 createWebSocket(expressServer);
-
-

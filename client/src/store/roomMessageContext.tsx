@@ -29,7 +29,6 @@ export function RoomMessageProvider({ children }: { children: ReactNode }) {
       socket = new WebSocket(`ws://localhost:3005?userId=${user.id}`);
       socket.addEventListener("message", (event) => {
         const message = JSON.parse(event.data);
-        console.log(message.type);
         switch (message.type) {
           case "room:delete":
             setRooms((prev) =>
@@ -38,7 +37,6 @@ export function RoomMessageProvider({ children }: { children: ReactNode }) {
             break;
 
           case "room:post":
-            console.log(message.payload);
             setRooms((prev) => [...prev, message.payload]);
             break;
 
@@ -74,7 +72,6 @@ export function RoomMessageProvider({ children }: { children: ReactNode }) {
                   ? { ...room, usersId: message.payload.usersId as string[] }
                   : room;
               });
-              console.log(updatedRooms);
               return updatedRooms.filter((room) => {
                 return (
                   room.ownerId === user.id || room.usersId.includes(user.id)
@@ -88,7 +85,6 @@ export function RoomMessageProvider({ children }: { children: ReactNode }) {
 
       clientApi.getRooms().then((res) => {
         const rooms = res.data;
-        console.log(rooms);
         setRooms(rooms);
       });
     }

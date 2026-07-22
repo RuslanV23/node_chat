@@ -23,13 +23,14 @@ import { Messages } from "../Messages/Messages";
 import { ModuleUsersRoom } from "../ModuleUsersRoom/ModuleUsersRoom";
 import { useRoomMessage } from "../../store/roomMessageContext";
 import { useAuth } from "../../store/authContext";
+import { useMedia } from "../../store/mediaContext";
 
 export const Chat: FC = () => {
   const params = useParams();
   const roomId = params.roomId;
 
   const navigation = useNavigate();
-
+  const { isDesktop } = useMedia();
   const { currentRoom, rooms, setCurrentRoom } = useRoomMessage();
   const [error, setError] = useState("");
   const [openRename, setOpenRename] = useState(false);
@@ -41,16 +42,16 @@ export const Chat: FC = () => {
 
   const { leftMenu, setLeftMenu } = useSideMenu();
 
-  const openRenameRef = useRef(null);
+  const openRenameRef = useRef<HTMLDivElement | null>(null);
 
-  const focusRenameRoomRef = useRef(null);
+  const focusRenameRoomRef = useRef<HTMLInputElement | null>(null);
   useEffect(() => {
     if (openRename && focusRenameRoomRef) {
-      focusRenameRoomRef.current.focus();
+      focusRenameRoomRef.current?.focus();
     }
   }, [openRename]);
 
-  useOnClickOutside(openRenameRef, () => {
+  useOnClickOutside(openRenameRef as React.RefObject<HTMLDivElement>, () => {
     setOpenRename(false);
   });
 
@@ -74,7 +75,7 @@ export const Chat: FC = () => {
         })
         .catch(() => {
           setCurrentRoom(null);
-          navigation('/');
+          navigation("/");
         });
     }
 
@@ -109,16 +110,16 @@ export const Chat: FC = () => {
           <div ref={openRenameRef}>
             <Button
               disabled={
-                !currentRoom || (user && currentRoom.ownerId !== user.id)
+                !currentRoom || (user && currentRoom.ownerId !== user.id) || false
               }
               onClick={() => {
                 setOpenRename(true);
               }}
-              className=" hidden lg:flex"
+              className="flex"
               variant="outline"
               leftIcon={<PencilLineIcon size={18} />}
             >
-              Rename
+              {isDesktop ? 'Rename' : ''}
             </Button>
             <form
               onSubmit={async (e) => {
@@ -155,7 +156,7 @@ export const Chat: FC = () => {
           </div>
 
           <Button
-            disabled={!currentRoom ||  (user && currentRoom.ownerId !== user.id)}
+            disabled={!currentRoom || (user && currentRoom.ownerId !== user.id) || false}
             onClick={() => {
               if (!roomId) {
                 return;
@@ -163,11 +164,12 @@ export const Chat: FC = () => {
               clientApi.deleteRoom(roomId);
               navigation("/");
             }}
-            className=" hidden lg:flex"
+            className="flex"
             variant="danger"
             leftIcon={<Trash2Icon size={18} />}
           >
-            Delete Room
+            {isDesktop ? 'Delete Room' : ''}
+            
           </Button>
           <Button
             onClick={() => setOpenUsers(true)}
@@ -193,7 +195,7 @@ export const Chat: FC = () => {
           className=" flex gap-2 px-4 py-2 md:px-10 md:py-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (textareaRef && roomId) {
+            if (textareaRef && textareaRef.current && roomId) {
               clientApi.createMessageByRoom(roomId, textareaRef.current.value);
               textareaRef.current.value = "";
             }

@@ -24,14 +24,12 @@ export const Messages: FC<MessagesProps> = ({ roomId, error }) => {
         switch (message.type) {
           case "message:post":
             if (roomId === message.payload.newMessage.roomId)
-              setMessages((prev) => [...prev, message.payload.newMessage]);
+              setMessages((prev) => prev ? [...prev, message.payload.newMessage] : prev);
             break;
         }
       });
 
       clientApi.getMessageByRoom(roomId).then((res) => {
-        console.log(res.data);
-
         setMessages(res.data);
       });
     }

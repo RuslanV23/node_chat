@@ -25,7 +25,6 @@ function App() {
           <Button
             variant="outline"
             onClick={() => {
-              console.log('gg');
               setLeftMenu((prev) => !prev);
             }}
             className=" shadow-[2px_2px_5px_#0008] px-0 fixed  top-[120px] z-10"

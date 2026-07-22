@@ -10,7 +10,7 @@ import { authApi } from "../api/authApi";
 import { clientApi } from "../api/clientApi";
 
 type authContextType = {
-  user: User;
+  user: User | null;
   isLoading: boolean;
   isChecked: boolean;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,10 +24,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isChecked, setIsChecked] = useState(false);
 
-  const createUser = async (username) => {
+  const createUser = async (username: string) => {
     // eslint-disable-next-line no-useless-catch
     try {
-      const res = await clientApi.createUser(username, (Math.random() * 100));
+      const res = await clientApi.createUser(username, Math.random() * 100);
       setUser(res.data);
       localStorage.setItem("accessToken", res.data.accessToken);
     } catch (e) {
@@ -42,7 +42,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setUser(res.data);
       })
-      .catch((e) => console.log(e))
       .finally(() => {
         setIsChecked(true);
         setIsLoading(false);
