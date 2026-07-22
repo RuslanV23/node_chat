@@ -1,4 +1,5 @@
-import axios, { type AxiosResponse } from "axios";
+import axios, { AxiosError, type AxiosResponse, type InternalAxiosRequestConfig } from "axios";
+
 import { authApi } from "./authApi";
 import type { Message, Room, User } from "../utils/types";
 
@@ -9,43 +10,53 @@ client.interceptors.request.use(
     const token = localStorage.getItem("accessToken");
 
     if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     config.headers["Content-Type"] = "application/json";
 
     return config;
   },
-  (error) => {
-    // Handle any request errors before they are dispatched
-    return Promise.reject(error);
-  }
+  (error: AxiosError) => Promise.reject(error),
 );
+
+type RetryRequestConfig = InternalAxiosRequestConfig & {
+  _retry?: boolean;
+};
 
 client.interceptors.response.use(
-  async (config) => {
-    if (config.status === 401) {
-      const res = await authApi.getMe();
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryRequestConfig | undefined;
 
-      localStorage.setItem("accessToken", res.data.accessToken);
-      return;
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retry
+    ) {
+      return Promise.reject(error);
     }
 
-    config.headers["Content-Type"] = "application/json";
-    return config;
+    originalRequest._retry = true;
+
+    try {
+      const response = await authApi.getMe();
+      const accessToken = response.data.accessToken;
+
+      localStorage.setItem("accessToken", accessToken);
+
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+
+      return client.request(originalRequest);
+    } catch (refreshError) {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("username");
+
+      return Promise.reject(refreshError);
+    }
   },
-  (error) => {
-    // Handle any request errors before they are dispatched
-    return Promise.reject(error);
-  }
 );
 
-function createUser(
-  username: string,
-  colorHuePercent: number
-): Promise<AxiosResponse<User & { accessToken: string }>> {
-  return client.post("/user", { username, colorHuePercent });
-}
 
 function getUser(
   userId: string
@@ -76,11 +87,17 @@ function renameRoom(id: string, name: string): Promise<AxiosResponse<void>> {
   return client.patch(`/room`, { id, name });
 }
 
-function addMemberRoom(id: string, userId: string): Promise<AxiosResponse<void>> {
+function addMemberRoom(
+  id: string,
+  userId: string
+): Promise<AxiosResponse<void>> {
   return client.patch(`/room/addMember`, { id, userId });
 }
 
-function deleteMemberRoom(id: string, userId: string): Promise<AxiosResponse<void>> {
+function deleteMemberRoom(
+  id: string,
+  userId: string
+): Promise<AxiosResponse<void>> {
   return client.patch(`/room/deleteMember`, { id, userId });
 }
 
@@ -101,6 +118,13 @@ function createMessageByRoom(
   text: string
 ): Promise<AxiosResponse<Message[]>> {
   return client.post(`/message`, { roomId, text });
+}
+
+function createUser(
+  username: string,
+  colorHuePercent: number
+): Promise<AxiosResponse<User & { accessToken: string }>> {
+  return client.post("/user", { username, colorHuePercent });
 }
 
 export const clientApi = {

@@ -30,6 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const res = await clientApi.createUser(username, Math.random() * 100);
       setUser(res.data);
       localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("username", res.data.username);
     } catch (e) {
       throw e;
     }

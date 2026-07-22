@@ -2,7 +2,7 @@ export type User = { id: string; username: string, colorHuePercent: number };
 
 export interface Message {
   id: string;
-  userName: string;
+  username: string;
   userId: string;
   time: Date;
   text: string;

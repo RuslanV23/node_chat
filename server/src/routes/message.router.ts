@@ -80,7 +80,7 @@ messageRouter.post(
       id: randomUUID().toString(),
       text,
       userId: res.locals.user.id,
-      userName: res.locals.user.userName,
+      username: res.locals.user.username,
       time: new Date(),
       roomId,
     };
