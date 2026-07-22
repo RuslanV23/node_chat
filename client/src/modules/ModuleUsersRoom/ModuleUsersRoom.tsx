@@ -133,7 +133,7 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
           {members &&
             members.map((member) => {
               return (
-                <div className="flex  items-center gap-4  border p-1 rounded-2xl">
+                <div key={member.id} className="flex  items-center gap-4  border p-1 rounded-2xl">
                   <UserIcon
                     colorHuePercentage={member.colorHuePercent}
                   ></UserIcon>
