@@ -103,7 +103,7 @@ export const Chat: FC = () => {
         ></Button>
         <div className="flex items-baseline-last gap-4 flex-wrap gap-y-0">
           <h1 className=" block h-fit">
-            {currentRoom ? `Wellcome to ${currentRoom.name}!` : "Choose room"}
+            {currentRoom ? `Welcome to ${currentRoom.name}!` : "Choose room"}
           </h1>
         </div>
         <div className="flex gap-2 flex-wrap">

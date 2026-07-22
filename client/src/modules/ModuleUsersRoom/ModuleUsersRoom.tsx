@@ -52,7 +52,7 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
     });
   }, [room.id]);
 
-  const [allUsers, setAllUsers] = useState<Omit<User, "accesToken">[] | null>(
+  const [allUsers, setAllUsers] = useState<Omit<User, "accessToken">[] | null>(
     null
   );
 
@@ -62,7 +62,7 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
     });
   }, [allUsers, members]);
 
-  const haldleGetAllUsers = useCallback(() => {
+  const handleGetAllUsers = useCallback(() => {
     if (currentRoom?.ownerId === user?.id) {
       clientApi.getAllUser().then((res) => setAllUsers(res.data));
     }
@@ -88,7 +88,7 @@ export const ModuleUsersRoom: FC<ModuleUsersRoomProps> = ({
           <div ref={addMemberOutsideRef} className=" relative w-fit">
             <Button
               onClick={() => {
-                haldleGetAllUsers();
+                handleGetAllUsers();
                 setOpenAddMember(true);
               }}
               className="flex w-fit"

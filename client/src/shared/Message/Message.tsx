@@ -44,7 +44,7 @@ export const Message: FunctionComponent<Props> = ({
                 hour: "2-digit",
                 minute: "2-digit",
                 hour12: false,
-              }).format(message.time)}
+              }).format(new Date(message.time))}
             </time>
           </div>
           <p

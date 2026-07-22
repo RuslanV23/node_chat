@@ -3,7 +3,7 @@ import { rooms, users } from '../store/store.js';
 import type { Room, User } from '../utils/types/types.js';
 import express, { Router, type Request, type Response } from 'express';
 import EventEmitter from 'node:events';
-import { authMiddleware } from '../midleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 interface RoomEvents {
   createRoom: [newRoom: Room];

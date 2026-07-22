@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authApi
       .getMe()
       .then((res) => {
-        setIsLoading(true);
         setUser(res.data);
       })
       .finally(() => {

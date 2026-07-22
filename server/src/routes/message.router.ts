@@ -3,15 +3,15 @@ import { messages, rooms } from '../store/store.js';
 import type { Message } from '../utils/types/types.js';
 import express, { Router, type Request, type Response } from 'express';
 import EventEmitter from 'node:events';
-import { authMiddleware } from '../midleware/auth.middleware.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
-interface MassageEvents {
+interface MessageEvents {
   createMessage: [message: Message];
 }
 
 export const messageRouter: Router = express.Router();
 
-export const messageEmitter = new EventEmitter<MassageEvents>();
+export const messageEmitter = new EventEmitter<MessageEvents>();
 
 messageRouter.get(
   '/',

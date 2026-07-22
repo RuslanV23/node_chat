@@ -15,21 +15,12 @@ auth.interceptors.request.use(
 
     return config;
   },
-  (error) => {
-    // Handle any request errors before they are dispatched
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 auth.interceptors.response.use(
-  async (config) => {
-    config.headers["Content-Type"] = "application/json";
-    return config;
-  },
-  (error) => {
-    // Handle any request errors before they are dispatched
-    return Promise.reject(error);
-  }
+  (response) => response,
+  (error) => Promise.reject(error)
 );
 
 function getMe(): Promise<AxiosResponse<User & {accessToken: string}>> {
